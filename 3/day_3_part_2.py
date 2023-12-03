@@ -6,33 +6,34 @@ from pathlib import Path
 # content = Path("3/test_input.txt").read_text()
 content = Path("3/input.txt").read_text()
 len_of_line = content.index("\n")
-len_of_content = len(content)
 
 
 def is_part_number_adjacent(part_number: re.Match, gear_idx: int) -> bool:
-    first_idx = part_number.start()
-    last_idx = part_number.end() - 1
-    # left
-    if gear_idx - 1 == last_idx:
+    first_idx_part_no = part_number.start()
+    last_idx_part_no = part_number.end() - 1
+    # check left of gear
+    if gear_idx - 1 == last_idx_part_no:
         return True
-    # right
-    if gear_idx + 1 == first_idx:
+    # check right of gear
+    if gear_idx + 1 == first_idx_part_no:
         return True
-    # above
+
+    def scan_left_to_right(start_index: int) -> bool:
+        if start_index >= first_idx_part_no and start_index <= last_idx_part_no:
+            return True
+        if start_index + 1 >= first_idx_part_no and start_index + 1 <= last_idx_part_no:
+            return True
+        if start_index + 2 >= first_idx_part_no and start_index + 2 <= last_idx_part_no:
+            return True
+        return False
+
+    # check above gear
     idx_top_left = gear_idx - len_of_line - 2
-    if idx_top_left >= first_idx and idx_top_left <= last_idx:
+    if scan_left_to_right(idx_top_left):
         return True
-    if idx_top_left + 1 >= first_idx and idx_top_left + 1 <= last_idx:
-        return True
-    if idx_top_left + 2 >= first_idx and idx_top_left + 2 <= last_idx:
-        return True
-    # below
+    # check below gear
     idx_bottom_left = gear_idx + len_of_line
-    if idx_bottom_left >= first_idx and idx_bottom_left <= last_idx:
-        return True
-    if idx_bottom_left + 1 >= first_idx and idx_bottom_left + 1 <= last_idx:
-        return True
-    if idx_bottom_left + 2 >= first_idx and idx_bottom_left + 2 <= last_idx:
+    if scan_left_to_right(idx_bottom_left):
         return True
 
     # default
