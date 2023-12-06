@@ -97,11 +97,14 @@ class Almanac:
         min_location = min(location_to_seed.keys())
         return min_location, location_to_seed[min_location]
 
-    def find_seed_with_lowest_location_2(self):
-        for location in range(100_000_000):
+    def find_seed_with_lowest_location_reverse(self):
+        location = 0
+        while True:
             seed = self.find_seed(location)
             if seed in self.seed_ranges:
                 return location
+            else:
+                location += 1
 
 
 def parse(file: str) -> Almanac:
@@ -126,6 +129,6 @@ def parse(file: str) -> Almanac:
 file = "5/test_input.txt"
 file = "5/input.txt"
 almanac = parse(file)
-# lowest_location, seed = almanac.find_seed_with_lowest_location()
-# print(f"Part 1: Lowest location is {lowest_location} for initial seed {seed}")
-print(almanac.find_seed_with_lowest_location_2())
+lowest_location, seed = almanac.find_seed_with_lowest_location()
+print(f"Part 1: Lowest location is {lowest_location} for initial seed {seed}")
+print("Part 2: lowest location is:", almanac.find_seed_with_lowest_location_reverse())
