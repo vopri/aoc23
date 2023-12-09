@@ -1,4 +1,5 @@
 from itertools import cycle
+from math import lcm
 from pathlib import Path
 from typing import Iterable, Iterator, TypeAlias
 
@@ -16,7 +17,6 @@ def parse(file: str) -> tuple[Iterator[str], Tree]:
     return instructions, tree
 
 
-file = "8/test_input.txt"
 file = "8/input.txt"
 instructions, tree = parse(file)
 
@@ -38,3 +38,10 @@ print(
     "Part 1:",
     count_steps(start_point="AAA", stop_condition=lambda cur_pos: cur_pos == "ZZZ"),
 )
+# part 2
+starting_points = [key for key in tree.keys() if key.endswith("A")]
+path_lenghts = [
+    count_steps(start_point, lambda cur_pos: cur_pos.endswith("Z"))
+    for start_point in starting_points
+]
+print("Part 2:", lcm(*path_lenghts))
