@@ -73,6 +73,6 @@ class ElvenGraph:
         return self._content[idx] not in ("\n", ".")
 
 
-graph = ElvenGraph("10/test_input.txt")
+# graph = ElvenGraph("10/test_input.txt")
 graph = ElvenGraph("10/input.txt")
 print("Part 1:", graph.count_steps_max_distance_loop())
