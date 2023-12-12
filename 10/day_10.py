@@ -2,6 +2,8 @@ import sys
 from math import floor
 from pathlib import Path
 
+from rich.console import Console
+
 # default recursion depth too low for this puzzle
 sys.setrecursionlimit(15000)
 
@@ -11,6 +13,7 @@ class ElvenGraph:
         self._content: str = Path(file).read_text()
         self._line_len = self._content.find("\n")
         self.start_idx: int = self._content.find("S")
+        self.loop = []
 
     def get_neighbours(self, idx: int) -> list[int]:
         symbol = self._content[idx]
@@ -27,17 +30,28 @@ class ElvenGraph:
 
     def count_steps_max_distance_loop(self) -> int:
         def depth_first_trav(idx: int, parent_idx: int):
-            visited.append(idx)
+            self.loop.append(idx)
             for neigbhour_idx in self.get_neighbours(idx):
                 if neigbhour_idx == parent_idx:
                     continue
-                if neigbhour_idx in visited:
+                if neigbhour_idx in self.loop:
                     return
                 depth_first_trav(neigbhour_idx, idx)
 
-        visited = []
         depth_first_trav(self.start_idx, -1)
-        return floor(len(visited) / 2)
+        return floor(len(self.loop) / 2)
+
+    def print_pipe(self):
+        if self.loop is None:
+            self.count_steps_max_distance_loop()
+        console = Console()
+        for index, char in enumerate(self._content):
+            if index in self.loop:
+                console.print(char, style="bold magenta", end="")
+            elif char == ".":
+                console.print(char, style="green on white", end="")
+            else:
+                console.print(char, end="")
 
     #### private stuff ####
 
@@ -76,3 +90,4 @@ class ElvenGraph:
 # graph = ElvenGraph("10/test_input.txt")
 graph = ElvenGraph("10/input.txt")
 print("Part 1:", graph.count_steps_max_distance_loop())
+graph.print_pipe()
