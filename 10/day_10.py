@@ -1,5 +1,6 @@
 import sys
-from math import floor
+from itertools import batched, islice, pairwise
+from math import floor, log10
 from pathlib import Path
 
 from rich.console import Console
@@ -14,6 +15,7 @@ class ElvenGraph:
         self._line_len = self._content.find("\n")
         self.start_idx: int = self._content.find("S")
         self.loop = []
+        self._enclosed_tiles = []
 
     def get_neighbours(self, idx: int) -> list[int]:
         symbol = self._content[idx]
@@ -47,11 +49,62 @@ class ElvenGraph:
         console = Console()
         for index, char in enumerate(self._content):
             if index in self.loop:
-                console.print(char, style="bold magenta", end="")
-            elif char == ".":
-                console.print(char, style="green on white", end="")
+                if char == "S":
+                    console.print(char, style="white on green", end="")
+                else:
+                    match char:
+                        case "F":
+                            replaced_char = "\u250c"
+                        case "J":
+                            replaced_char = "\u2518"
+                        case "L":
+                            replaced_char = "\u2514"
+                        case "7":
+                            replaced_char = "\u2510"
+                        case _:
+                            replaced_char = char
+                    console.print(
+                        replaced_char,
+                        style="white on red",
+                        end="",
+                    )
+            elif index in self._enclosed_tiles:
+                console.print(char, style="black on yellow", end="")
+            elif char == "\n":
+                console.print()
             else:
                 console.print(char, end="")
+
+    def count_enclosed_pipes(self):
+        counts = []
+        for line_no, _ in enumerate(self._content.splitlines()):
+            for open, closed in batched(
+                self._extract_vertical_pipes_in_line_sorted_by_idx(line_no), n=2
+            ):
+                counted_symbols_between_pipes = closed - open - 1
+                if counted_symbols_between_pipes == 0:
+                    continue
+                potential_hits = range(open + 1, closed)
+                for potential_hit_idx in potential_hits:
+                    if potential_hit_idx in self.loop:
+                        continue
+                    else:
+                        counts.append(1)
+                        self._enclosed_tiles.append(potential_hit_idx)
+        return len(self._enclosed_tiles)
+
+    def _extract_vertical_pipes_in_line_sorted_by_idx(self, line_no: int) -> list[int]:
+        VERTICAL = "S F | 7 ".split()
+        if not hasattr(self, "_vertical_pipe_idxs"):
+            self._vertical_pipe_idxs = sorted(
+                [idx for idx in self.loop if self._content[idx] in VERTICAL]
+            )
+        from_ = line_no * self._line_len + line_no
+        until = from_ + self._line_len + 1
+        result = [
+            idx for idx in self._vertical_pipe_idxs if idx >= from_ and idx < until
+        ]
+        return result
 
     #### private stuff ####
 
@@ -87,7 +140,11 @@ class ElvenGraph:
         return self._content[idx] not in ("\n", ".")
 
 
-# graph = ElvenGraph("10/test_input.txt")
+# graph = ElvenGraph("10/test_2_input.txt")
+# graph = ElvenGraph("10/test_3_input.txt")
+# graph = ElvenGraph("10/test_4_input.txt")
 graph = ElvenGraph("10/input.txt")
 print("Part 1:", graph.count_steps_max_distance_loop())
-graph.print_pipe()
+
+print("Part 2:", graph.count_enclosed_pipes())
+# graph.print_pipe()
